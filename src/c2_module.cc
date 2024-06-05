@@ -32,7 +32,7 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "c2-module.h"
+#include "c2_module.h"
 
 #include <C2PlatformSupport.h>
 #include <dlfcn.h>
@@ -481,7 +481,7 @@ void C2Module::HandleError(uint32_t error) {
 C2Module *C2Factory::GetModule(std::string name, C2ModeType mode) {
     std::lock_guard<std::mutex> lk(C2Factory::lock_);
 
-    bool is_audio = mode == C2ModeType::kAudioEncode || mode == C2ModeType::kAudioDecode;
+    bool is_audio = mode == C2ModeType::AudioEncode || mode == C2ModeType::AudioDecode;
 
     // Initialize Codec2 Store Factory.
     if ((is_audio && !factory_audio_) || (!is_audio && !factory_video_)) {
@@ -530,10 +530,8 @@ C2Module *C2Factory::GetModule(std::string name, C2ModeType mode) {
     // Create Codec2 component with the given name.
     std::shared_ptr<C2Component> component;
     auto status = store->createComponent(name, &component);
-
     if (status != C2_OK) {
         throw Exception("Unable to create Codec2 component '", name, "', error: ", status, " !");
     }
-
     return new C2Module(component, mode);
 }
