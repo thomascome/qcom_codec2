@@ -11,6 +11,8 @@ int main(int argc, const char *argv[]) {
     C2Engine *engine =
         C2Engine::new_c2_engine(C2ModeType::VideoEncode, C2CodecType::H264VideoEncode);
 
+    engine->start_c2_engine();
+    engine->stop_c2_engine();
     C2Engine::free_c2_engine(engine);
     base::LogInfo() << "end of main function";
     return 0;

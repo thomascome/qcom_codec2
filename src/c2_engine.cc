@@ -14,18 +14,18 @@ C2Engine *C2Engine::new_c2_engine(C2ModeType mode, C2CodecType codec_type) {
 
     switch (codec_type) {
         case C2CodecType::H264VideoEncode:
-            _name = "c2.qti.avc.encoder";
+            engine->_name = "c2.qti.avc.encoder";
             break;
         case C2CodecType::H265VideoEncode:
-            _name = "c2.qti.hevc.encoder";
+            engine->_name = "c2.qti.hevc.encoder";
             break;
         case C2CodecType::HEICVideoEncode:
-            _name = "c2.qti.heic.encoder";
+            engine->_name = "c2.qti.heic.encoder";
             break;
     }
 
     try {
-        engine->_c2_module = C2Factory::GetModule(_name, mode);
+        engine->_c2_module = C2Factory::GetModule(engine->_name, mode);
     } catch (std::exception &e) {
         base::LogError() << "Failed to create C2 module, error: " << e.what();
         free_c2_engine(engine);
@@ -79,14 +79,14 @@ bool C2Engine::stop_c2_engine() {
 bool C2Engine::flush_c2_engine() {
     try {
         _c2_module->Flush(C2Component::FLUSH_COMPONENT);
-        base::LogDebug() << "Flushed c2module " << engine->name;
+        base::LogDebug() << "Flushed c2module " << _name;
     } catch (std::exception &e) {
         base::LogError() << "Failed to flush c2module, error: " << e.what();
         return false;
     }
 
     // Wait until all work is completed or EOS.
-    GST_C2_ENGINE_CHECK_AND_WAIT_PENDING_WORK(engine, 0);
+    // GST_C2_ENGINE_CHECK_AND_WAIT_PENDING_WORK(engine, 0);
 
     return true;
 }
