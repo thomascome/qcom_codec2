@@ -49,11 +49,13 @@ enum class C2EventType : uint32_t {
 };
 
 struct C2StreamBuffer {
-    int8_t *addr;
+    uint8_t *data;
     int32_t size;
     int32_t width;
     int32_t height;
-    int32_t stride;
+    int32_t offset[3];
+    int32_t stride[3];
+    int32_t planes;  //NV12 = 2, YUV420P=3
     C2PixelFormat pixel_format;
     bool isubwc;
 };
