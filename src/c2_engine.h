@@ -24,25 +24,37 @@ public:
      */
     static void free_c2_engine(C2Engine *engine);
 public:
+    virtual void EventHandler(C2EventType event, void *payload);
+    virtual void FrameAvailable(std::shared_ptr<C2Buffer> &buffer, uint64_t index,
+                                uint64_t timestamp, C2FrameData::flags_t flags);
+public:
     /**
      * @brief : Allow the Codec2 component to process requests.
+     * 
      * @return: true on success or false on failure.
      */
     bool start_c2_engine();
     /**
      * @brief Stop the Codec2 component from processing any further requests.
+     * 
      * @return: true on success or false on failure.
      */
     bool stop_c2_engine();
     /**
      * @brief Flush all pending work in the Codec2 component and wait until it is done.
+     * 
      * @return:true on success or false on failure.
      */
     bool flush_c2_engine();
-public:
-    virtual void EventHandler(C2EventType event, void *payload);
-    virtual void FrameAvailable(std::shared_ptr<C2Buffer> &buffer, uint64_t index,
-                                uint64_t timestamp, C2FrameData::flags_t flags);
+    /**
+     * @brief Takes a Buffer data containing a GstBuffer, translates that codec
+     * frame into Codec2 buffer and submits it to the Codec2 component for encoding
+     * or decoding.
+     * @item: Buffer data that will be queued for encoding or decoding.
+     * 
+     * @return:true on success or false on failure.
+     */
+    bool c2_engine_queue_buffer(C2StreamBuffer *stream_buffer);
 public:
     C2Engine();
     ~C2Engine();

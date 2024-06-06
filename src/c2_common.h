@@ -47,3 +47,13 @@ enum class C2EventType : uint32_t {
     kEOS,
     kDrop
 };
+
+struct C2StreamBuffer {
+    int8_t *addr;
+    int32_t size;
+    int32_t width;
+    int32_t height;
+    int32_t stride;
+    C2PixelFormat pixel_format;
+    bool isubwc;
+};

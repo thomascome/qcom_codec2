@@ -1,10 +1,13 @@
 #include "c2_engine.h"
 
 #include "base/log.h"
+#include "c2_utils.h"
 
+/************* static method *************/
 C2Engine *C2Engine::new_c2_engine(C2ModeType mode, C2CodecType codec_type) {
     C2Engine *engine = new C2Engine();
     if (engine == nullptr) {
+        base::LogError() << "Cannot alloc memory for C2Engine";
         return nullptr;
     }
 
@@ -49,6 +52,12 @@ void C2Engine::free_c2_engine(C2Engine *engine) {
     delete engine;
 }
 
+/************* public method *************/
+void C2Engine::EventHandler(C2EventType event, void *payload) {}
+
+void C2Engine::FrameAvailable(std::shared_ptr<C2Buffer> &buffer, uint64_t index, uint64_t timestamp,
+                              C2FrameData::flags_t flags) {}
+
 bool C2Engine::start_c2_engine() {
     try {
         _c2_module->Start();
@@ -91,10 +100,42 @@ bool C2Engine::flush_c2_engine() {
     return true;
 }
 
-void C2Engine::EventHandler(C2EventType event, void *payload) {}
+bool C2Engine::c2_engine_queue_buffer(C2StreamBuffer *stream_buffer) {
+    std::list<std::unique_ptr<C2Param>> settings;
+    std::shared_ptr<C2Buffer> c2buffer;
+    uint64_t index = 0;
+    uint64_t timestamp = 0;
+    uint32_t flags = 0;
 
-void C2Engine::FrameAvailable(std::shared_ptr<C2Buffer> &buffer, uint64_t index, uint64_t timestamp,
-                              C2FrameData::flags_t flags) {}
+    std::shared_ptr<C2GraphicBlock> block;
+
+    // no dma buffer implement
+    {
+        C2PixelFormat format = stream_buffer->pixel_format;
+
+        uint32_t width = stream_buffer->width;
+        uint32_t height = stream_buffer->height;
+        bool isheic = false;
+
+        std::shared_ptr<C2GraphicBlock> block;
+        try {
+            std::shared_ptr<C2GraphicMemory> c2_mem = _c2_module->GetGraphicMemory();
+            block = c2_mem->Fetch(width, height, format, isheic);
+        } catch (std::exception &e) {
+            base::LogError() << "Failed to fetch memory block, error: " << e.what();
+            return false;
+        }
+        c2buffer = C2Utils::CreateBuffer(stream_buffer, block);
+    }
+    try {
+        _c2_module->Queue(c2buffer, settings, index, timestamp, flags);
+        base::LogDebug() << "Queued buffer";
+    } catch (std::exception &e) {
+        base::LogError() << "Failed to queue frame, error: " << e.what();
+        return false;
+    }
+    return true;
+}
 
 C2Engine::C2Engine() {}
 

@@ -7,6 +7,7 @@ add_definitions(-D_LINUX_)
 add_library(${QCOMM_ENCODER_NAME} SHARED
     c2_module.cc
     c2_engine.cc
+    c2_utils.cc
 )
 
 set_target_properties(${QCOMM_ENCODER_NAME} PROPERTIES PUBLIC_HEADER
