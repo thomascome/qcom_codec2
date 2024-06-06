@@ -1,3 +1,5 @@
+#include <unistd.h>
+
 #include <iostream>
 #include <string>
 
@@ -20,7 +22,7 @@ int main(int argc, const char *argv[]) {
     }
     int buffer_size = 1920 * 1080 * 3 / 2;
     uint8_t *mem_buffer = (uint8_t *)malloc(buffer_size);
-    fread(mem_buffer, buffer_size, 0, fp);
+    int read_size = fread(mem_buffer, buffer_size, 0, fp);
     C2StreamBuffer stream_buffer;
     stream_buffer.data = mem_buffer;
     stream_buffer.size = buffer_size;
@@ -34,8 +36,12 @@ int main(int argc, const char *argv[]) {
     stream_buffer.pixel_format = C2PixelFormat::kNV12;
     stream_buffer.isubwc = false;
 
-    engine->c2_engine_queue_buffer(&stream_buffer);
-
+    for (int i = 0; i < 30; i++) {
+        engine->c2_engine_queue_buffer(&stream_buffer);
+        usleep(33000);
+    }
+    while (true)
+        ;
     free(mem_buffer);
     fclose(fp);
     engine->stop_c2_engine();

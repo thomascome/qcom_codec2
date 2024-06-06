@@ -1,5 +1,7 @@
 #include "c2_engine.h"
 
+#include <unistd.h>
+
 #include "base/log.h"
 #include "c2_utils.h"
 
@@ -53,10 +55,59 @@ void C2Engine::free_c2_engine(C2Engine *engine) {
 }
 
 /************* public method *************/
-void C2Engine::EventHandler(C2EventType event, void *payload) {}
+void C2Engine::EventHandler(C2EventType event, void *payload) {
+    base::LogDebug() << "callback event handle : " << (int)event;
+}
 
-void C2Engine::FrameAvailable(std::shared_ptr<C2Buffer> &buffer, uint64_t index, uint64_t timestamp,
-                              C2FrameData::flags_t flags) {}
+FILE *fp = fopen("out.264", "wb");
+char buf[2048];
+
+void C2Engine::FrameAvailable(std::shared_ptr<C2Buffer> &c2buffer, uint64_t index,
+                              uint64_t timestamp, C2FrameData::flags_t flags) {
+    base::LogDebug() << "callback frame available";
+    uint32_t fd = 0;
+    uint32_t size = 0;
+    if (c2buffer->data().type() == C2BufferData::LINEAR) {
+        const C2ConstLinearBlock block = c2buffer->data().linearBlocks().front();
+        const C2Handle *handle = block.handle();
+
+        size = block.size();
+        C2ReadView view = block.map().get();
+        memcpy(buf, view.data(), size);
+        base::LogDebug() << "C2BufferData type linear : " << size;
+        fwrite(buf, size, 1, fp);
+        fflush(fp);
+    } else if (c2buffer->data().type() == C2BufferData::GRAPHIC) {
+        const C2ConstGraphicBlock block = c2buffer->data().graphicBlocks().front();
+        auto handle = static_cast<const android::C2HandleGBM *>(block.handle());
+
+        size = handle->mInts.size;
+        fd = handle->mFds.buffer_fd;
+        base::LogDebug() << "C2BufferData type graphic : " << size;
+    }
+
+    // Check whether this is a key/sync frame.
+    // error: ‘C2Param::CoreIndex::<unnamed enum> C2Param::CoreIndex::IS_STREAM_FLAG’ is protected within this context
+    // std::shared_ptr<const C2Info> c2info =
+    //     c2buffer->getInfo(C2StreamPictureTypeInfo::output::PARAM_TYPE);
+    // auto pictype = std::static_pointer_cast<const C2StreamPictureTypeInfo::output>(c2info);
+
+    // if (pictype && (pictype->value == C2Config::SYNC_FRAME)) {
+    //     base::LogDebug() << "picture value is sync frame";
+    // }
+
+    // if (flags & C2FrameData::FLAG_CODEC_CONFIG) {
+    //     base::LogDebug() << "GST_BUFFER_FLAG_HEADER";
+    // }
+
+    // if (flags & C2FrameData::FLAG_DROP_FRAME) {
+    //     base::LogDebug() << "GST_BUFFER_FLAG_DROPPABLE";
+    // }
+
+    // if (!(flags & C2FrameData::FLAG_INCOMPLETE)) {
+    //     base::LogDebug() << "GST_BUFFER_FLAG_MARKER";
+    // }
+}
 
 bool C2Engine::start_c2_engine() {
     try {

@@ -24,9 +24,9 @@ public:
      */
     static void free_c2_engine(C2Engine *engine);
 public:
-    virtual void EventHandler(C2EventType event, void *payload);
-    virtual void FrameAvailable(std::shared_ptr<C2Buffer> &buffer, uint64_t index,
-                                uint64_t timestamp, C2FrameData::flags_t flags);
+    virtual void EventHandler(C2EventType event, void *payload) override;
+    virtual void FrameAvailable(std::shared_ptr<C2Buffer> &c2buffer, uint64_t index,
+                                uint64_t timestamp, C2FrameData::flags_t flags) override;
 public:
     /**
      * @brief : Allow the Codec2 component to process requests.
