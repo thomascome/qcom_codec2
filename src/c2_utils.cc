@@ -18,10 +18,17 @@ std::shared_ptr<C2Buffer> C2Utils::CreateBuffer(C2StreamBuffer *stream_buffer,
         return nullptr;
     }
 
+    printf("begin create buffer:%dx%d, size:%d\n", stream_buffer->width, stream_buffer->height,
+           stream_buffer->size);
+
     // Fetch the array of pointers to the planes.
     uint8_t *const *data = view.data();
+
     // Fetch the GBM handle containing the destination stride and scanline.
     auto handle = static_cast<const android::C2HandleGBM *>(block->handle());
+
+    printf("handle info stride:%d, slice_height:%d\n", handle->mInts.stride,
+           handle->mInts.slice_height);
 
     for (uint32_t idx = 0; idx < stream_buffer->planes; idx++) {
         uint32_t n_rows = (idx == 0) ? stream_buffer->height : (stream_buffer->height / 2);
