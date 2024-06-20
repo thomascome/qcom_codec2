@@ -1,6 +1,6 @@
 project(qcomm_codec2)
 
-set(QCOMM_ENCODER_NAME "qcomm_codec2")
+set(QCOMM_ENCODER_NAME "qcom_codec2")
 
 add_definitions(-D_LINUX_)
 

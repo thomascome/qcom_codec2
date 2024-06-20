@@ -4,6 +4,7 @@
 #include <string>
 
 #include "base/log.h"
+#include "base/signal_monitor.h"
 #include "src/c2_common.h"
 #include "src/c2_engine.h"
 
@@ -11,6 +12,8 @@
 C2Module *c2module = nullptr;
 
 int main(int argc, const char *argv[]) {
+    base::register_signal_monitor("/data/dump");
+
     FILE *fp = fopen("sample.yuv", "rb");
     if (fp == NULL) {
         base::LogError() << "cannot open sample yuv";
@@ -40,12 +43,13 @@ int main(int argc, const char *argv[]) {
     stream_buffer.pixel_format = C2PixelFormat::kNV12;
     stream_buffer.isubwc = false;
 
-    for (int i = 0; i < 300; i++) {
+    for (int i = 0; i < 30; i++) {
         engine->c2_engine_queue_buffer(&stream_buffer);
         usleep(33000);
     }
-    while (true)
-        ;
+
+    getchar();
+
     free(mem_buffer);
     engine->stop_c2_engine();
     C2Engine::free_c2_engine(engine);
